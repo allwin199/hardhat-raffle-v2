@@ -6,6 +6,7 @@ import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2
 
 contract Raffle is VRFConsumerBaseV2 {
     error Raffle__NotEnoughETHEntered();
+    error Raffle__TransferFailed();
 
     /* State Variables */
     uint256 private immutable i_entranceFee;
@@ -20,8 +21,12 @@ contract Raffle is VRFConsumerBaseV2 {
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1; // only one random no is required
 
+    // Lottery variables;
+    address private s_recentWinner;
+
     event RaffleEnter(address indexed player);
     event RequestedRaffleWinner(uint256 indexed requestId);
+    event WinnerPicked(address indexed winner);
 
     constructor(
         uint256 _entranceFee,
@@ -66,9 +71,22 @@ contract Raffle is VRFConsumerBaseV2 {
     }
 
     function fulfillRandomWords(
-        uint256 _requestId,
+        uint256 /* _requestId */,
         uint256[] memory _randomWords
-    ) internal override {}
+    ) internal override {
+        // for eg let's assume `_randomWords` has returned no 202
+        // s_players array has 10 players.
+        // To pick a random winner, we can use modulo
+        // 202 % 10 = 2
+        // since we are using s_players length, result will be always one of the index
+        uint256 indexOfWinner = _randomWords[0] % s_players.length;
+        // since we are getting only one random no, it will be at index 0.
+        address payable recentWinner = s_players[indexOfWinner];
+        s_recentWinner = recentWinner;
+        (bool success, ) = recentWinner.call{value: address(this).balance}("");
+        if (!success) revert Raffle__TransferFailed();
+        emit WinnerPicked(recentWinner);
+    }
 
     /* View / Pure functions */
     function getEntranceFee() public view returns (uint256) {
@@ -77,5 +95,9 @@ contract Raffle is VRFConsumerBaseV2 {
 
     function getPlayer(uint256 _playerIndex) public view returns (address) {
         return s_players[_playerIndex];
+    }
+
+    function getRecentWinner() public view returns (address) {
+        return s_recentWinner;
     }
 }
