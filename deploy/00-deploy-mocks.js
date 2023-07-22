@@ -1,6 +1,6 @@
 const { network } = require("hardhat");
 
-const BASE_FEE = ethers.utils.parseEther("0.25"); //0.25 is the premium. It consts 0.25 LINK per request
+const BASE_FEE = ethers.parseEther("0.25"); //0.25 is the premium. It consts 0.25 LINK per request
 const GAS_PRICE_LINK = 1e9; //link per gas. calculated value based on gas price of the chain
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
@@ -9,6 +9,7 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
 
     args = [BASE_FEE, GAS_PRICE_LINK];
 
+    log("Local Network Detected! Deploying Mocks....");
     await deploy("VRFCoordinatorV2Mock", {
         from: deployer,
         args: args,
@@ -20,4 +21,4 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
     log("--------------------------------------------");
 };
 
-module.exports.tags = ["all", "mock"];
+module.exports.tags = ["all", "mocks"];

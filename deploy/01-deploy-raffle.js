@@ -2,7 +2,7 @@ const { network } = require("hardhat");
 const { verify } = require("../utils/verify");
 require("dotenv").config();
 
-const VRF_SUB_FUND_AMOUNT = ethers.utils.parseEther("2");
+const VRF_SUB_FUND_AMOUNT = ethers.parseEther("2");
 
 module.exports = async ({ getNamedAccounts, deployments }) => {
     const { deploy, log } = deployments;
@@ -14,13 +14,15 @@ module.exports = async ({ getNamedAccounts, deployments }) => {
         const vrfCoordinatorV2Mock = await ethers.getContract(
             "VRFCoordinatorV2Mock",
         );
-        vrfCoordinatorV2Address = vrfCoordinatorV2Mock.address;
+
+        vrfCoordinatorV2Address = vrfCoordinatorV2Mock.target;
         const transactionResponse =
             await vrfCoordinatorV2Mock.createSubscription();
         const transactionReceipt = await transactionResponse.wait(1);
+
         subscriptionId = transactionReceipt.events[0].args.subId;
-        // we got the subscription, now we have to fund the subscription.
-        // usually we need the link token on a real network to fund.
+        // // we got the subscription, now we have to fund the subscription.
+        // // usually we need the link token on a real network to fund.
         await vrfCoordinatorV2Mock.fundSubscription(
             subscriptionId,
             VRF_SUB_FUND_AMOUNT,
