@@ -29,6 +29,9 @@ module.exports = {
         deployer: {
             default: 0,
         },
+        player: {
+            default: 1,
+        },
     },
     solidity: {
         compilers: [{ version: "0.8.18" }],
